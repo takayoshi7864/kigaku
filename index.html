@@ -8,6 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="九星気学盤">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -31,6 +32,27 @@ body{margin:0}
   color-scheme:light;
   --f-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
 }
+/* ダークモード: 端末の設定に従う(自動)。右上のボタンで、ライト/ダークに固定もできる */
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#12161c;--surface:#1a2029;--ink:#e6eaf0;--muted:#9aa5b4;--line:#2f3a47;
+  --indigo:#8fb0e0;--on-indigo:#0f1722;
+  --gold:#e0b457;--gold-bg:#3a2f12;
+  --kyo:#ff8a85;--kyo-bg:#3b1b1d;
+  --good:#5fd3a0;--good-bg:#123325;--on-good:#08170f;--on-kyo:#1a0b0c;
+  --e-water:#6cb4ee;--e-earth:#d9a65a;--e-wood:#6fcf8f;--e-metal:#a9b6c4;--e-fire:#ff8f84;
+  color-scheme:dark}}
+:root[data-theme=dark]{
+  --bg:#12161c;--surface:#1a2029;--ink:#e6eaf0;--muted:#9aa5b4;--line:#2f3a47;
+  --indigo:#8fb0e0;--on-indigo:#0f1722;
+  --gold:#e0b457;--gold-bg:#3a2f12;
+  --kyo:#ff8a85;--kyo-bg:#3b1b1d;
+  --good:#5fd3a0;--good-bg:#123325;--on-good:#08170f;--on-kyo:#1a0b0c;
+  --e-water:#6cb4ee;--e-earth:#d9a65a;--e-wood:#6fcf8f;--e-metal:#a9b6c4;--e-fire:#ff8f84;
+  color-scheme:dark}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.themesw{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex:none}
+.themesw button{border:0;border-radius:0;background:transparent;font-size:12px;min-height:32px;padding:4px 9px}
+.themesw button[aria-pressed=true]{background:var(--indigo);color:var(--on-indigo)}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;
   padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -207,6 +229,11 @@ input.pick::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:10
 <div class="wrap">
   <header>
     <h1>九星気学盤</h1>
+    <div class="themesw" role="group" aria-label="表示の色">
+      <button type="button" data-theme-set="auto" aria-pressed="true">自動</button>
+      <button type="button" data-theme-set="light" aria-pressed="false">ライト</button>
+      <button type="button" data-theme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
   </header>
 
   <div class="top">
@@ -441,6 +468,20 @@ const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
 
 const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:v;}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+/* 表示の色: 自動(端末の設定に従う)/ライト/ダーク */
+(function(){
+  var root=document.documentElement,btns=document.querySelectorAll('[data-theme-set]'),mq=window.matchMedia&&matchMedia('(prefers-color-scheme:dark)');
+  function paint(){
+    var t=store.get('theme','auto');
+    if(t==='light'||t==='dark')root.dataset.theme=t;else root.removeAttribute('data-theme');
+    btns.forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.themeSet===(t==='light'||t==='dark'?t:'auto')));});
+    var m=document.querySelector('meta[name=theme-color]');
+    if(m)m.setAttribute('content',getComputedStyle(root).getPropertyValue('--bg').trim()||'#ffffff');
+  }
+  btns.forEach(function(b){b.addEventListener('click',function(){store.set('theme',b.dataset.themeSet);paint();});});
+  if(mq&&mq.addEventListener)mq.addEventListener('change',paint);
+  paint();
+})();
 function jstNowParts(){const d=new Date(Date.now()+JST);return{y:d.getUTCFullYear(),m:d.getUTCMonth()+1,d:d.getUTCDate()};}
 function toDateStr(y,m,d){return y+'-'+pad(m)+'-'+pad(d);}
 function parseDate(s){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?[+m[1],+m[2],+m[3]]:null;}
