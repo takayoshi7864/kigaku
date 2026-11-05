@@ -1,6 +1,6 @@
 // 九星気学盤: オフライン用サービスワーカー
 // ファイルを更新したときは、下の VERSION を変えると、端末のキャッシュが入れ替わります。
-const VERSION = 'kigaku-v6';
+const VERSION = 'kigaku-v7';
 const CORE = [
   './',
   './index.html',
